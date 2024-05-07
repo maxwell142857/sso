@@ -39,54 +39,23 @@ app.use(require('express-session')({ secret: 'keyboard cat', resave: true, saveU
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/login', (req, res) => {
-    res.send(`
-        <h1>Login Page</h1>
-        <form action="/login" method="post">
-            <label for="loginType">Choose login type:</label>
-            <select name="loginType" id="loginType">
-                <option value="azuread">Microsoft SSO</option>
-                <option value="local">Local Account</option>
-            </select>
-            <button type="submit">Login</button>
-        </form>
-    `);
+app.get('/', (req, res) => {
+    res.send('Hello World from Wenhanfu Yang');
 });
 
-app.post('/login', (req, res, next) => {
-    const loginType = req.body.loginType;
-    if (loginType === 'azuread') {
-        passport.authenticate('azuread-openidconnect')(req, res, next);
-    } else if (loginType === 'local') {
-        res.send('Local account login functionality not implemented yet.');
-    } else {
-        res.status(400).send('Invalid login type');
-    }
-});
+app.get('/login', passport.authenticate('azuread-openidconnect'));
 
 app.post('/auth/openid/return',
-    passport.authenticate('azuread-openidconnect', { failureRedirect: '/login' }),
+    passport.authenticate('azuread-openidconnect', { failureRedirect: '/' }),
     (req, res) => {
-        if (req.user) {
-            const { displayName } = req.user;
-
-            console.log(req.user);
-
-            res.send(`Hello, ${displayName} ! You are now logged in.`);
-        } else {
-            res.status(401).send('Authentication failed');
-        }
+        console.log("Here")
+        res.redirect('/');
     }
 );
-
 
 app.get('/logout', (req, res) => {
     req.logout();
     res.redirect('/');
-});
-
-app.get('/', (req, res) => {
-    res.send('Hello World from Wenhanfu Yang');
 });
 
 app.listen(PORT, () => {
